@@ -1,0 +1,61 @@
+---
+- name: 'Add project resources to {{ controller_host }}'
+  ansible.controller.project:
+    name: '{{ __project_item.name | mandatory }}'
+    copy_from: '{{ __project_item.copy_from | default(omit, true) }}'
+    description: '{{ __project_item.description | default(omit, true) }}'
+    scm_type: "{{ __project_item.scm_type | default('git') }}"
+    scm_url: '{{ __project_item.scm_url | mandatory }}'
+    default_environment: '{{ __project_item.default_environment | default(omit, true) }}'
+    local_path: '{{ __project_item.local_path | default(omit, true) }}'
+    scm_branch: '{{ __project_item.scm_branch | default(omit, true)  }}'
+    scm_refspec: '{{ __project_item.scm_refspec | default(omit, true) }}'
+    credential: "{{ __project_item.credential | default('scm_ansiblesa-ds_prd', true) }}"
+    scm_clean: '{{ __project_item.scm_clean | default(omit) }}'
+    scm_delete_on_update: '{{ __project_item.scm_delete_on_update | default(omit) }}'
+    scm_track_submodules: '{{ __project_item.scm_track_submodules | default(omit) }}'
+    scm_update_on_launch: '{{ __project_item.scm_update_on_launch | default(omit) }}'
+    scm_update_cache_timeout: '{{ __project_item.scm_update_cache_timeout | default(omit, true) }}'
+    allow_override: '{{ __project_item.allow_override | default(omit) }}'
+    timeout: '{{ __project_item.job_timeout | default(__project_item.timeout | default(omit, true)) }}'
+    organization: '{{ __project_item.organization | default("AscTech", true) }}'
+    state: "{{ __project_item.state | default('present') }}"
+    wait: '{{ __project_item.wait | default(omit) }}'
+    update_project: '{{ __project_item.update_project | default(omit) }}'
+    interval: '{{ __project_item.interval | default(async_delay) }}'
+    notification_templates_started: "{{ __project_item.notification_templates_started | default([]) | map(attribute='name') | list }}"
+    notification_templates_success: "{{ __project_item.notification_templates_success | default([]) | map(attribute='name') | list }}"
+    notification_templates_error: "{{ __project_item.notification_templates_error | default([]) | map(attribute='name') | list }}"
+
+    # Role Standard Options | Values found in Defaults\main.yml
+    controller_host: '{{ controller_host }}'
+    controller_username: '{{ controller_username }}'
+    controller_password: '{{ controller_password }}'
+    controller_oauthtoken: '{{ controller_oauthtoken }}'
+  loop: '{{ projects }}'
+  loop_control:
+    loop_var: __project_item
+  no_log: '{{ secure_logging }}'
+  async: '{{ ansible_check_mode | ternary(0, 1000) }}'
+  poll: 0
+  register: __projects_job_async
+  changed_when: not __projects_job_async.changed
+  vars:
+    ansible_async_dir: '/tmp/.ansible_async'
+  ignore_errors: '{{ ignore_job_errors }}'
+
+- name: 'Wait for project configuration on {{ controller_host }}'
+  async_status:
+    jid: '{{ __projects_job_async_results_item.ansible_job_id }}'
+  register: __projects_job_async_result
+  until: __projects_job_async_result.finished
+  retries: '{{ async_retries }}'
+  delay: '{{ async_delay }}'
+  loop: '{{ __projects_job_async.results }}'
+  loop_control:
+    loop_var: __projects_job_async_results_item
+  when: __projects_job_async_results_item.ansible_job_id is defined
+  no_log: '{{ secure_logging }}'
+  vars:
+    ansible_async_dir: '/tmp/.ansible_async'
+  ignore_errors: '{{ ignore_job_errors }}'

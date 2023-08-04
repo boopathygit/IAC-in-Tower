@@ -1,0 +1,6 @@
+---
+job_config_secure_logging: false   #if not specified, defaults to false
+#async_config_retries: 60   #if not specified, defaults to 30
+async_config_delay: 10 #if not specified, defaults to 1
+# job_config_ignore_errors: true # if no specified, defaults to false
+aap_team: AAT

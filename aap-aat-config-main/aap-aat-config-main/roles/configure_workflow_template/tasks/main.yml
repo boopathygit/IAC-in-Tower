@@ -1,0 +1,82 @@
+---
+# Create Workflow
+- name: 'Add workflow job template resources to {{ controller_host }}'
+  ansible.controller.workflow_job_template:
+    # Required parameters
+    name: '{{ __workflow_item.name | mandatory }}'
+
+    # Optional parameters
+    description: '{{ __workflow_item.description | default(omit, true) }}'
+    organization: '{{ __workflow_item.organization | default("AscTech", true) }}'
+    extra_vars: '{{ __workflow_item.extra_vars | default(omit, true) }}'
+    inventory: '{{ __workflow_item.inventory.name | default( __workflow_item.inventory | default(omit, true)) }}'
+    limit: '{{ __workflow_item.limit | default(omit, true) }}'
+    labels: "{{ __workflow_item.labels | default([]) | map(attribute='name') | list }}"
+    scm_branch: '{{ __workflow_item.scm_branch | default(omit, true) }}'
+    verbosity: '{{ __workflow_item.verbosity | default(omit, true) }}'
+
+    new_name: '{{ __workflow_item.new_name | default(omit, true) }}'
+    copy_from: '{{ __workflow_item.copy_from | default(omit, true) }}'
+
+    # Prompt / Boolean parameters
+    allow_simultaneous: '{{ __workflow_item.allow_simultaneous | default(omit) }}'
+    ask_variables_on_launch: '{{ __workflow_item.ask_variables_on_launch | default(omit) }}'
+    ask_inventory_on_launch: '{{ __workflow_item.ask_inventory_on_launch | default(omit) }}'
+    ask_scm_branch_on_launch: '{{ __workflow_item.ask_scm_branch_on_launch | default(omit) }}'
+    ask_limit_on_launch: '{{ __workflow_item.ask_limit_on_launch | default(omit) }}'
+
+    webhook_service: '{{ __workflow_item.webhook_service | default(omit, true) }}'
+    webhook_credential: '{{ __workflow_item.webhook_credential | default(omit, true) }}'
+
+    survey_enabled: '{{ __workflow_item.survey_enabled | default(omit) }}'
+    survey_spec: '{{ __workflow_item.survey_spec | default(omit, true) }}'
+
+    schema: '{{ __workflow_item.schema | default(omit, true) }}'
+    destroy_current_schema: '{{ __workflow_item.destroy_current_schema | default( true if __workflow_item.schema is defined and __workflow_item.schema | length > 0 else __workflow_item.nodes is defined and __workflow_item.nodes | length > 0 | bool,true) }}'
+
+    notification_templates_started: "{{ __workflow_item.notification_templates_started | default(__workflow_item.related.notification_templates_started | default([]) | map(attribute='name') | list ) }}"
+    notification_templates_success: "{{ __workflow_item.notification_templates_success | default(__workflow_item.related.notification_templates_success | default([]) | map(attribute='name') | list ) }}"
+    notification_templates_error: "{{ __workflow_item.notification_templates_error | default(__workflow_item.related.notification_templates_error | default([]) | map(attribute='name') | list ) }}"
+    notification_templates_approvals: "{{ __workflow_item.notification_templates_approvals | default(__workflow_item.related.notification_templates_approvals | default([]) | map(attribute='name') | list ) }}"
+
+    state: "{{ __workflow_item.state | default('present') }}"
+
+    # Role Standard Options | Values found in Defaults\main.yml
+    controller_host: '{{ controller_host }}'
+    controller_username: '{{ controller_username }}'
+    controller_password: '{{ controller_password }}'
+    controller_oauthtoken: '{{ controller_oauthtoken }}'
+  loop: '{{ workflow_templates }}'
+  loop_control:
+    loop_var: __workflow_item
+  no_log: '{{ secure_logging }}'
+  async: '{{ ansible_check_mode | ternary(0, 1000) }}'
+  poll: 0
+  register: __workflows_job_async
+  changed_when: not __workflows_job_async.changed
+  vars:
+    ansible_async_dir: '/tmp/.ansible_async'
+
+- name: 'Wait for workflow configuration on {{ controller_host }}'
+  ansible.builtin.async_status:
+    jid: '{{ __workflows_job_async_results_item.ansible_job_id }}'
+  register: __workflows_job_async_result
+  until: __workflows_job_async_result.finished
+  retries: '{{ async_retries }}'
+  delay: '{{ async_delay }}'
+  loop: '{{ __workflows_job_async.results }}'
+  loop_control:
+    loop_var: __workflows_job_async_results_item
+  when: __workflows_job_async_results_item.ansible_job_id is defined
+  no_log: '{{ secure_logging }}'
+  vars:
+    ansible_async_dir: '/tmp/.ansible_async'
+
+# Create links between workflow node
+- ansible.builtin.include_tasks: 'add_workflows_schema.yml'
+  loop: '{{ workflow_templates }}'
+  loop_control:
+    loop_var: __workflow_item
+  when:
+    - __workflow_item.simplified_schema is defined
+    - __workflow_item.state is not defined or __workflow_item.state is defined and __workflow_item.state == "present"

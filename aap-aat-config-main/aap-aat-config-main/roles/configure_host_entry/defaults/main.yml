@@ -1,0 +1,12 @@
+---
+controller_host: '{{ controller_hostname | default("aap.ascension.org", true) }}'
+controller_username: '{{ controller_user | default(omit, true) }}'
+controller_password: '{{ controller_pass | default(omit, true) }}'
+controller_oauthtoken: '{{ TOKEN_STRING | default(controller_token | default(omit, true)) }}'
+
+secure_logging: '{{ job_config_secure_logging | default(true) }}'
+async_retries: '{{ async_config_retries | default(30) }}'
+async_delay: '{{ async_config_delay | default(1) }}'
+ignore_job_errors: '{{ job_config_ignore_errors | default(false) }}'
+
+host_entries: []

@@ -1,0 +1,22 @@
+- ansible.builtin.set_fact:
+    valid_auth: true
+  when: controller_user is defined and controller_pass is defined
+
+- ansible.builtin.set_fact:
+    valid_auth: true
+  when: TOKEN_STRING is defined or controller_token is defined
+
+- ansible.builtin.fail:
+    msg: 'No authentication method for {{ controller_host }} was specified'
+  when: valid_auth is not defined
+
+# This is needed to ensure permissions are properly granted to created resources.
+# aap_team is defined in group_vars\all.yml
+- fail:
+    msg: 'aap_team is not defined in group_vars/all.yml'
+  when: not aap_team
+
+- fail:
+    msg: "aap_team is defined as '{{ aap_team }}'. Please validate your team name with the AAP admins."
+  when:
+    - "not (lookup('ansible.controller.controller_api', 'teams', host=controller_host, username=controller_user, password=controller_pass, oauth_token=controller_oauthtoken, query_params={'name': aap_team}, verify_ssl=False))"

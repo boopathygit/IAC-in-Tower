@@ -1,0 +1,10 @@
+# These owners will be the default owners for everything in the repo.
+# Pull these from a github group or direct account
+*                   @jshirely @hkaur040 @ylakshmi @bgreeshm
+
+
+# Updates below this line invalidate operability within AAP
+.github/            @ascension/solutionsarchitectteam-iaas
+.gitignore          @ascension/solutionsarchitectteam-iaas
+roles/              @ascension/solutionsarchitectteam-iaas
+collections/        @ascension/solutionsarchitectteam-iaas

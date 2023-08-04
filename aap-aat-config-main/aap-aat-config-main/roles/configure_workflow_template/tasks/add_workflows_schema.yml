@@ -1,0 +1,104 @@
+---
+# Creating Workflow Node
+- name: 'Add workflow job node resources to {{ controller_host }}'
+  ansible.controller.workflow_job_template_node:
+    # Required parameters
+    identifier: '{{ __workflow_node_item.identifier | mandatory }}' # internal identification ID
+    workflow_job_template: '{{ __workflow_item.name | mandatory }}'
+
+    # Optional parameters
+    extra_data: '{{ __workflow_node_item.extra_data | default(omit, true) }}'
+    inventory: '{{ __workflow_node_item.inventory | default(omit, true) }}'
+    scm_branch: '{{ __workflow_node_item.scm_branch | default(omit, true) }}'
+    job_type: '{{ __workflow_node_item.job_type | default(omit, true) }}'
+    job_tags: '{{ __workflow_node_item.job_tags | default(omit, true) }}'
+    skip_tags: '{{ __workflow_node_item.skip_tags | default(omit, true) }}'
+    limit: '{{ __workflow_node_item.limit | default(omit, true) }}'
+    diff_mode: '{{ __workflow_node_item.diff_mode | default (omit) }}'
+    verbosity: '{{ __workflow_node_item.verbosity | default(omit, true) }}'
+    credentials: "{{ __workflow_node_item.credentials | default([]) | map(attribute='name') | list }}"
+    unified_job_template: '{{ __workflow_node_item.unified_job_template | default(omit, true) }}' # Run Job template
+    approval_node: '{{ __workflow_node_item.approval_node | default(omit, true) }}'
+    all_parents_must_converge: "{{ __workflow_node_item.all_parents_must_converge | default ('false') }}"
+    organization: '{{ __workflow_item.organization | default("AscTech", true) }}' # Workflow job template organization
+    state: "{{ __workflow_node_item.state | default('present') }}"
+
+    # Role Standard Options | Values found in Defaults\main.yml
+    controller_host: '{{ controller_host }}'
+    controller_username: '{{ controller_username }}'
+    controller_password: '{{ controller_password }}'
+    controller_oauthtoken: '{{ controller_oauthtoken }}'
+  loop: '{{ __workflow_item.simplified_schema }}'
+  loop_control:
+    loop_var: __workflow_node_item
+  no_log: '{{ secure_logging }}'
+  async: '{{ ansible_check_mode | ternary(0, 1000) }}'
+  poll: 0
+  register: __workflows_node_async
+  changed_when: not __workflows_node_async.changed
+  vars:
+    ansible_async_dir: '/tmp/.ansible_async'
+
+- name: 'Wait for workflow node configuration on {{ controller_host }}'
+  ansible.builtin.async_status:
+    jid: '{{ __workflows_node_async_results_item.ansible_job_id }}'
+  register: __workflows_node_async_result
+  until: __workflows_node_async_result.finished
+  retries: '{{ async_retries }}'
+  delay: '{{ async_delay }}'
+  loop: '{{ __workflows_node_async.results }}'
+  loop_control:
+    loop_var: __workflows_node_async_results_item
+  when: __workflows_node_async_results_item.ansible_job_id is defined
+  no_log: '{{ secure_logging }}'
+  vars:
+    ansible_async_dir: '/tmp/.ansible_async'
+
+# Create links between workflow node
+- name: 'Add links between workflow job node resources on {{ controller_host }}'
+  ansible.controller.workflow_job_template_node:
+    # Required parameters
+    identifier: '{{ __workflow_node_item.identifier | mandatory }}'
+    workflow_job_template: '{{ __workflow_item.name | mandatory }}'
+
+    # Optional parameters
+    always_nodes: "{{ __workflow_node_item.always_nodes | default([], true) | selectattr('identifier', 'defined') | map(attribute='identifier') | list }}" # Nodes to advance on always (blue links) # noqa 204
+    failure_nodes: "{{ __workflow_node_item.failure_nodes | default([], true) | selectattr('identifier', 'defined') | map(attribute='identifier') | list }}" # Nodes to advance on failure (red links) # noqa 204
+    organization: "{{ __workflow_item.organization | default( 'AscTech', true) }}" # Workflow job template organization
+    success_nodes: "{{ __workflow_node_item.success_nodes | default([], true) | selectattr('identifier', 'defined') | map(attribute='identifier') | list }}" # Nodes to advance on success (green links) # noqa 204
+    state: "{{ __workflow_node_item.state | default(controller_state | default('present')) }}"
+
+    # Role Standard Options | Values found in Defaults\main.yml
+    controller_host: '{{ controller_host }}'
+    controller_username: '{{ controller_username }}'
+    controller_password: '{{ controller_password }}'
+    controller_oauthtoken: '{{ controller_oauthtoken }}'
+  loop: '{{ __workflow_item.simplified_schema }}'
+  loop_control:
+    loop_var: __workflow_node_item
+  no_log: '{{ secure_logging }}'
+  # Execute only the nodes that define links to the following
+  when:
+    ((__workflow_node_item.always_nodes is defined and __workflow_node_item.always_nodes | length > 0 ) or
+    (__workflow_node_item.success_nodes is defined and __workflow_node_item.success_nodes | length > 0 ) or
+    (__workflow_node_item.failure_nodes is defined and __workflow_node_item.failure_nodes | length > 0 ))
+  async: '{{ ansible_check_mode | ternary(0, 1000) }}'
+  poll: 0
+  register: __workflows_link_async
+  vars:
+    ansible_async_dir: '/tmp/.ansible_async'
+
+- name: 'Wait for workflow node configuration on {{ controller_host }}'
+  ansible.builtin.async_status:
+    jid: '{{ __workflows_link_async_results_item.ansible_job_id }}'
+  register: __workflows_link_async_result
+  until: __workflows_link_async_result.finished
+  retries: '{{ async_retries }}'
+  delay: '{{ async_delay }}'
+  loop: '{{ __workflows_link_async.results }}'
+  loop_control:
+    loop_var: __workflows_link_async_results_item
+  when: __workflows_link_async_results_item.ansible_job_id is defined
+  no_log: '{{ secure_logging }}'
+  vars:
+    ansible_async_dir: '/tmp/.ansible_async'

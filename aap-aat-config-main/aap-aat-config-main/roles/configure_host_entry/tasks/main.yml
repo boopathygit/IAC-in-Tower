@@ -1,0 +1,43 @@
+---
+- name: 'Add host entry resources on {{ controller_host }}'
+  ansible.controller.host:
+    name: '{{ __host_item.name | mandatory }}'
+    new_name: '{{ __host_item.new_name | default(omit, true) }}'
+    description: '{{ __host_item.description | default(omit, true) }}'
+    inventory: '{{ __host_item.inventory | mandatory }}'
+    enabled: '{{ __host_item.enabled | default(omit) }}'
+    state: "{{ __host_item.state | default(controller_state | default('present')) }}"
+    variables: "{{ __host_item.variables | default(omit, true) | regex_replace('[ ]{2,}','') }}"
+
+    # Role Standard Options | Values found in Defaults\main.yml
+    controller_host: '{{ controller_host }}'
+    controller_username: '{{ controller_username }}'
+    controller_password: '{{ controller_password }}'
+    controller_oauthtoken: '{{ controller_oauthtoken }}'
+  loop: '{{ host_entries }}'
+  loop_control:
+    loop_var: __host_item
+  no_log: '{{ secure_logging }}'
+  async: '{{ ansible_check_mode | ternary(0, 1000) }}'
+  poll: 0
+  register: __host_job_async
+  changed_when: not __host_job_async.changed
+  vars:
+    ansible_async_dir: '/tmp/.ansible_async'
+  ignore_errors: '{{ ignore_job_errors }}'
+
+- name: 'Wait for host entry configuration on {{ controller_host }}'
+  async_status:
+    jid: '{{ __host_job_async_result_item.ansible_job_id }}'
+  register: __host_job_async_result
+  until: __host_job_async_result.finished
+  retries: '{{ async_retries }}'
+  delay: '{{ async_delay }}'
+  loop: '{{ __host_job_async.results }}'
+  loop_control:
+    loop_var: __host_job_async_result_item
+  when: __host_job_async_result_item.ansible_job_id is defined
+  no_log: '{{ secure_logging }}'
+  vars:
+    ansible_async_dir: '/tmp/.ansible_async'
+  ignore_errors: '{{ ignore_job_errors }}'

@@ -1,0 +1,44 @@
+---
+workflow_templates: []
+# === EXAMPLES ===
+
+# NOTE:
+# the full parameter list for workflow_templates may be found in /roles/configure_workflow_template/README.md
+
+# workflow_templates:
+# Create workflow using simplified_schema parameter
+#  - name: test_wkflw_with_approval
+#    simplified_schema:
+#      - identifier: approve_job
+#        approval_node:
+#          name: approve_job
+#        success_node:
+#          - cfg_endpoint
+#        failure_node:
+#          - notify_team
+#      - identifier: cfg_endpoint
+#        unified_job_template: cfg_endpoint
+#      - identifier: notify_team
+#        unified_job_template: notify_team
+#
+# Create workflow using schema parameter
+#  - name: test_wkflw_with_approval
+#    schema:
+#      - identifier: approve_job
+#        related:
+#          success_nodes:
+#            - identifier: cfg_endpoint
+#          failure_nodes:
+#            - identifier: notify_team
+#      - identifier: cfg_endpoint
+#        unified_job_template:
+#          name: aap_node_configuration
+#          organization:
+#            name: 'AscTech'
+#          type: job_template
+#      - identifier: notify_team
+#        unified_job_template:
+#          name: notify_team
+#          organization:
+#            name: 'AscTech'
+#          type: job_template

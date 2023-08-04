@@ -1,0 +1,18 @@
+---
+rbac: []
+# === EXAMPLES ===
+
+# NOTE:
+# the full parameter list for rbac may be found in /roles/configure_rbac/README.md
+
+#rbac:
+# Remove test_team_1's read access from test_project_1
+ # - role: read
+  #  team: AAT
+   # projects:
+    #  - test_project_1
+    
+#
+# Grant test_team_1 read access to test_project_2
+  
+ 

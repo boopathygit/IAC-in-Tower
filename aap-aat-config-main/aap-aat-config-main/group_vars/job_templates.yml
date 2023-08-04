@@ -1,0 +1,49 @@
+---
+#job_templates: []
+# === EXAMPLES ===
+
+# NOTE:
+# the full parameter list for job_templates may be found in /roles/configure_job_template/README.md
+
+job_templates:
+# Remove test_job_template_1 from AAP
+#  - name: test_job_template_1
+#    project: 'test_project_1'
+#    playbook: 'test_playbook.yml'
+#    inventory: 'test_inventory_1'
+#    state: absent
+#
+# Create test_job_template_2 with two linked credentials
+  - name: patching_template2
+    project: 'patching_project'
+    playbook: 'linux-patch.yml'     
+    verbosity: 4
+    job_type: 'run'       
+    ask_inventory_on_launch: true 
+    survey_enabled: true
+    ask_credential_on_launch: true
+    ask_variables_on_launch: true
+    
+  - name: aix_template
+    project: 'aix_project'
+    playbook: 'aix.yml'     
+    verbosity: 4
+    job_type: 'run'       
+    inventory: 'SrcInventory'
+    survey_enabled: true   
+    ask_credential_on_launch: true
+   
+    
+  - name: changing_vm_template
+    project: 'changing_vm_project'
+    playbook: 'changing_vm_configurations.yml'     
+    verbosity: 4
+    job_type: 'run'   
+    survey_enabled: true
+    ask_inventory_on_launch: true  
+    ask_credential_on_launch: true
+    ask_variables_on_launch: true   
+    
+#    credentials:
+#       - test_cred_1
+#       - test_cred_2

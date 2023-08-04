@@ -1,0 +1,89 @@
+---
+- hosts: localhost
+  gather_facts: false
+
+  vars_files:
+    - group_vars/all.yml
+    - group_vars/credentials.yml
+    - group_vars/projects.yml
+    - group_vars/inventories.yml
+    - group_vars/host_entries.yml
+    - group_vars/job_templates.yml
+    - group_vars/workflow_templates.yml
+    - group_vars/rbac.yml
+
+  roles:
+    - role: preflight_check
+    - role: configure_credential
+    - role: configure_project
+    - role: configure_inventory
+    - role: configure_host_entry
+    - role: configure_job_template
+    - role: configure_workflow_template
+    - role: configure_rbac
+
+  tasks:
+    - name: Set fact for managed AAP resources
+      ansible.builtin.set_fact:
+        managed_job_template: |
+          {{ job_templates | rejectattr('state', 'defined') | list |
+             union( job_templates | selectattr('state', 'defined') | selectattr('state', 'equalto', 'present') | list ) }}
+        managed_workflow_template: |
+          {{ workflow_templates | rejectattr('state', 'defined') | list |
+             union( workflow_templates | selectattr('state', 'defined') | selectattr('state', 'equalto', 'present') | list ) }}
+        managed_project: |
+          {{ projects | rejectattr('state', 'defined') | list |
+             union( projects | selectattr('state', 'defined') | selectattr('state', 'equalto', 'present') | list ) }}
+        managed_credential: |
+          {{ credentials | rejectattr('state', 'defined') | list |
+             union( credentials | selectattr('state', 'defined') | selectattr('state', 'equalto', 'present') | list ) }}
+        managed_inventory: |
+          {{ inventories | rejectattr('state', 'defined') | list |
+             union( inventories | selectattr('state', 'defined') | selectattr('state', 'equalto', 'present') | list ) }}
+
+    - name: Grant access to managed AAP resources
+      block:
+        - name: 'Grant read access for {{ aap_team }} to managed projects, inventories, credentials, and job templates'
+          ansible.builtin.include_role:
+            name: configure_rbac
+          vars:
+            rbac:
+              - role: 'read'
+                team: '{{ aap_team }}'
+                projects: '{{ managed_project | map(attribute="name") | list }}'
+                inventories: '{{ managed_inventory | map(attribute="name") | list }}'
+                credentials: '{{ managed_credential | map(attribute="name") | list }}'
+                job_templates: '{{ managed_job_template | map(attribute="name") | list }}'
+                workflow_templates: '{{ managed_workflow_template | map(attribute="name") | list }}'
+
+        - name: 'Grant execute access for {{ aap_team }} to managed job templates and workflow templates'
+          ansible.builtin.include_role:
+            name: configure_rbac
+          vars:
+            rbac:
+              - role: 'execute'
+                team: '{{ aap_team }}'
+                job_templates: '{{ managed_job_template | map(attribute="name") | list }}'
+                workflow_templates: '{{ managed_workflow_template | map(attribute="name") | list }}'
+
+        - name: 'Grant use access for {{ aap_team }} to managed inventories, projects, and credentials'
+          ansible.builtin.include_role:
+            name: configure_rbac
+          vars:
+            rbac:
+              - role: 'use'
+                team: '{{ aap_team }}'
+                projects: '{{ managed_project | map(attribute="name") | list }}'
+                inventories: '{{ managed_inventory | map(attribute="name") | list }}'
+                credentials: '{{ managed_credential | map(attribute="name") | list }}'
+
+        - name: 'Grant admin access for {{ aap_team }} to managed credentials and inventories'
+          ansible.builtin.include_role:
+            name: configure_rbac
+          vars:
+            rbac:
+              - role: 'admin'
+                team: '{{ aap_team }}'
+                credentials: '{{ managed_credential | map(attribute="name") | list }}'
+                inventories: '{{ managed_inventory | map(attribute="name") | list }}'
+      when: managed_job_template or managed_inventory or managed_credential or managed_job_template or managed_workflow_template or managed_project

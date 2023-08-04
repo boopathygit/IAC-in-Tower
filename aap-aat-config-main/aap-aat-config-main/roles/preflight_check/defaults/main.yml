@@ -1,0 +1,5 @@
+---
+controller_host: '{{ controller_hostname | default("aap.ascension.org", true) }}'
+controller_username: '{{ controller_user | default(omit, true) }}'
+controller_password: '{{ controller_pass | default(omit, true) }}'
+controller_oauthtoken: '{{ TOKEN_STRING | default(controller_token | default(omit, true))  }}'
