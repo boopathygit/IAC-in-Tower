@@ -21,7 +21,7 @@ Version: 2.9+
 
 | Name                | Type   | Description                                   | Default           |
 | ------------------- | ------ | --------------------------------------------- | ----------------- |
-| controller_hostname | string | The host used for run role's tasks            | aap.ascension.org |
+| controller_hostname | string | The host used for run role's tasks            | boo.tower.com     |
 | controller_user     | string | Username for accessing controller_hostname    | null              |
 | controller_pass     | string | Password for accessing controller_hostname    | null              |
 | controller_token    | raw    | OAuth token for accessing controller_hostname | null              |
