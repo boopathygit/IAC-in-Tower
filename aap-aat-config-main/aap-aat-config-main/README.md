@@ -2,12 +2,12 @@
 
 Ansible playbook with roles for performing move / add / changes against Ansible Automation Platform (AAP). Repository is designated for AAT.
 
-[![aat-config](https://img.shields.io/badge/automation_platform-aat_config_job-red?style=for-the-badge&logo=ansible)](https://aap.ascension.org/#/templates/job_template/364/jobs)
+[![aat-config](https://img.shields.io/badge/automation_platform-aat_config_job-red?style=for-the-badge&logo=ansible)](https://boo.tower.com/#/templates/job_template/364/jobs)
 
 ## Requirements
 
 - Version: 2.9+
-- [AAP Onboarding Process](https://github.ascension.org/Ascension/aap-base-config/blob/main/docs/README.md)
+- [AAP Onboarding Process](https://github.********.org/******/aap-base-config/blob/main/docs/README.md)
 - [Github Naming Process](https://docs.google.com/document/d/1EfCEjD3Af9k67AY6i4rtcoLrQzeTWqW0B9uZwUhRNnY/edit?usp=sharing) Please read for naming convention of your repo.
 
 > After performing the AAP onboarding process, [line 3 of CODEOWNERS](CODEOWNERS) should be updated with your team's GitHub accounts.
