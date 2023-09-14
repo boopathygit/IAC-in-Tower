@@ -1,5 +1,5 @@
 ---
-- name: 'Add credentials resources to {{ controller_host }}'
+- name: "Add credentials resources to {{ controller_host }}"
   ansible.controller.credential:
     name: '{{ __credentials_item.name | mandatory }}'
     new_name: '{{ __credentials_item.new_name | default(omit, true) }}'
