@@ -1,5 +1,5 @@
 ---
-controller_host: '{{ controller_hostname | default("boo.tower.com", true) }}'
+controller_host: '{{ controller_hostname | default("http://ec2-3-25-220-241.ap-southeast-2.compute.amazonaws.com:31225", true) }}'
 controller_username: '{{ controller_user | default(omit, true) }}'
 controller_password: '{{ controller_pass | default(omit, true) }}'
 controller_oauthtoken: '{{ TOKEN_STRING | default(controller_token | default(omit, true)) }}'
