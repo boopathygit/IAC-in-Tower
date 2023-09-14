@@ -24,7 +24,7 @@
 
   tasks:
     - name: Installing Ansible galaxy
-      shell: ansible-galaxy install collections/requirements.yml
+      shell: ansible-galaxy role install -r roles/requirements.yml
     - name: Set fact for managed AAP resources
       ansible.builtin.set_fact:
         managed_job_template: |
