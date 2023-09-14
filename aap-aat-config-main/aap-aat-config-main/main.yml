@@ -23,6 +23,8 @@
     - role: configure_rbac
 
   tasks:
+    - name: Installing Ansible galaxy
+      shell: ansible-galaxy install collections/requirements.yml
     - name: Set fact for managed AAP resources
       ansible.builtin.set_fact:
         managed_job_template: |
