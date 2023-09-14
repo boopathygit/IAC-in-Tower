@@ -1,45 +1,45 @@
 ---
-- name: "Add credentials resources to {{ controller_host }}"
+- name: 'Add credentials resources to {{ controller_host }}'
   ansible.controller.credential:
-    name: "{{ __credentials_item.name | mandatory }}"
-    new_name: "{{ __credentials_item.new_name | default(omit, true) }}"
-    copy_from: "{{ __credentials_item.copy_from | default(omit, true) }}"
-    description: "{{ __credentials_item.description | default(omit, true) }}"
-    organization: "{{ __project_item.organization | default("Default", true) }}"
-    credential_type: "{{ __credentials_item.credential_type | default("Machine", true) }}"
-    user: "{{ __credentials_item.user.username | default(omit, true) }}"
-    team: "{{ __credentials_item.team | default(omit, true) }}"
-    state: "{{ __credentials_item.state | default("present") }}"
+    name: '{{ __credentials_item.name | mandatory }}'
+    new_name: '{{ __credentials_item.new_name | default(omit, true) }}'
+    copy_from: '{{ __credentials_item.copy_from | default(omit, true) }}'
+    description: '{{ __credentials_item.description | default(omit, true) }}'
+    organization: '{{ __project_item.organization | default("Default", true) }}'
+    credential_type: '{{ __credentials_item.credential_type | default("Machine", true) }}'
+    user: '{{ __credentials_item.user.username | default(omit, true) }}'
+    team: '{{ __credentials_item.team | default(omit, true) }}'
+    state: "{{ __credentials_item.state | default('present') }}"
 
     # Role Standard Options | Values found in Defaults\main.yml
-    controller_host: "{{ controller_host }}"
-    controller_username: "{{ controller_username }}"
-    controller_password: "{{ controller_password }}"
-    controller_oauthtoken: "{{ controller_oauthtoken }}"
-  loop: "{{ credentials }}"
+    controller_host: '{{ controller_host }}'
+    controller_username: '{{ controller_username }}'
+    controller_password: '{{ controller_password }}'
+    controller_oauthtoken: '{{ controller_oauthtoken }}'
+  loop: '{{ credentials }}'
   loop_control:
     loop_var: __credentials_item
-  no_log: "{{ secure_logging }}"
-  async: "{{ ansible_check_mode | ternary(0, 1000) }}"
+  no_log: '{{ secure_logging }}'
+  async: '{{ ansible_check_mode | ternary(0, 1000) }}'
   poll: 0
   register: __credentials_job_async
   changed_when: not __credentials_job_async.changed
   vars:
-    ansible_async_dir: "/tmp/.ansible_async"
-  ignore_errors: "{{ ignore_job_errors }}"
+    ansible_async_dir: '/tmp/.ansible_async'
+  ignore_errors: '{{ ignore_job_errors }}'
 
-- name: "Wait for credential configuration on {{ controller_host }}"
+- name: 'Wait for credential configuration on {{ controller_host }}'
   async_status:
-    jid: "{{ __credentials_job_async_results_item.ansible_job_id }}"
+    jid: '{{ __credentials_job_async_results_item.ansible_job_id }}'
   register: __credentials_job_async_result
   until: __credentials_job_async_result.finished
-  retries: "{{ async_retries }}"
-  delay: "{{ async_delay }}"
-  loop: "{{ __credentials_job_async.results }}"
+  retries: '{{ async_retries }}'
+  delay: '{{ async_delay }}'
+  loop: '{{ __credentials_job_async.results }}'
   loop_control:
     loop_var: __credentials_job_async_results_item
   when: __credentials_job_async_results_item.ansible_job_id is defined
-  no_log: "{{ secure_logging }}"
+  no_log: '{{ secure_logging }}'
   vars:
-    ansible_async_dir: "/tmp/.ansible_async"
-  ignore_errors: "{{ ignore_job_errors }}"
+    ansible_async_dir: '/tmp/.ansible_async'
+  ignore_errors: '{{ ignore_job_errors }}'
