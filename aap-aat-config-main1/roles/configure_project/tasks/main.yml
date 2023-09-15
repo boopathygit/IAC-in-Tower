@@ -18,7 +18,7 @@
     scm_update_cache_timeout: '{{ __project_item.scm_update_cache_timeout | default(omit, true) }}'
     allow_override: '{{ __project_item.allow_override | default(omit) }}'
     timeout: '{{ __project_item.job_timeout | default(__project_item.timeout | default(omit, true)) }}'
-    organization: '{{ __project_item.organization | default("AscTech", true) }}'
+    organization: '{{ __project_item.organization | default("Default", true) }}'
     state: "{{ __project_item.state | default('present') }}"
     wait: '{{ __project_item.wait | default(omit) }}'
     update_project: '{{ __project_item.update_project | default(omit) }}'
