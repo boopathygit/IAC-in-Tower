@@ -1,0 +1,24 @@
+---
+#host_entries: []
+# === EXAMPLES ===
+
+# NOTE:
+# the full parameter list for inventories may be found in /roles/configure_inventory/README.md
+
+host_entries:
+# Remove test_host_1 from AAP and test_inventory_1
+#   - name: test_host_1
+#     inventory: test_inventory_1
+#     state: absent
+#
+# Create test_host_2 in test_inventory_1
+#   - name: test_host_2
+#     inventory: test_inventory_1
+#
+# Create test_host_3 with variables in test_inventory_1
+   - name: 10.113.97.165  
+     description: 'AIX test server'
+     inventory: testInventory               
+#        test_variable_2: value_2
+#        test_variable_3: value_3
+#        test_variable_4: value_4

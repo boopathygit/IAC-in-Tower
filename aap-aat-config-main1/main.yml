@@ -1,0 +1,23 @@
+---
+- hosts: localhost
+  gather_facts: false
+
+  vars_files:
+    - group_vars/projects.yml
+    - group_vars/inventories.yml
+    - group_vars/host_entries.yml
+
+  roles:
+    - role: configure_project
+    - role: configure_inventory
+    - role: configure_host_entry
+
+  tasks:
+    - name: Set fact for managed AAP resources
+      ansible.builtin.set_fact:
+        managed_project: |
+          {{ projects | rejectattr('state', 'defined') | list |
+             union( projects | selectattr('state', 'defined') | selectattr('state', 'equalto', 'present') | list ) }}
+        managed_inventory: |
+          {{ inventories | rejectattr('state', 'defined') | list |
+             union( inventories | selectattr('state', 'defined') | selectattr('state', 'equalto', 'present') | list ) }}

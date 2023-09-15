@@ -1,0 +1,39 @@
+---
+# === EXAMPLES ===
+
+# NOTE:
+# the full parameter list for projects may be found in /roles/configure_project/README.md
+
+projects:
+# Remove test_project_1 from AAP
+#  - name: test_project_1
+#    state: absent
+#
+# Create test_project_2 associated with GitHub repo
+  - name: patching_project
+    description: 'performs patching on linux servers both physical & virtual ones hosted in vCenterr and Hyper V'
+    scm_url: 'https://github.com/boopathygit/Ansible'
+    scm_update_on_launch: true
+    update_project: true
+    
+  - name: aix_project
+    description: 'check current configuration details on aix servers'
+    scm_url: 'https://github.com/boopathygit/Ansible'
+    scm_update_on_launch: true
+    update_project: true 
+    
+  - name: changing_vm_project
+    description: 'changing vm configuration on VM for both vmware and Hyper V VMs'
+    scm_url: 'https://github.com/boopathygit/Ansible'
+    scm_update_on_launch: true
+    update_project: true   
+#
+# Create test_project_3 from test_project_2
+#  - name: test_project_3
+#    copy_from: test_project_2
+#
+# Create test_project_4 associated with GitHub repo's specific branch
+#  - name: test_project_4
+#    description: 'test_project_4 description'
+#    scm_url: 'https://github.com/boopathygit/Terraform'
+#    scm_branch: 'test_branch'
