@@ -4,7 +4,7 @@
     name: '{{ __inv_item.name | mandatory }}'
     copy_from: '{{ __inv_item.copy_from | default(omit, true) }}'
     description: '{{ __inv_item.description | default(omit, true) }}'
-    organization: '{{ __project_item.organization | default("AscTech", true) }}'
+    organization: '{{ __project_item.organization | default("Default", true) }}'
     instance_groups: '{{ __inv_item.instance_groups | default(omit, true) }}'
     variables: "{{ __inv_item.variables | default(omit, true) | regex_replace('[ ]{2,}','') }}"
     kind: '{{ __inv_item.kind | default(omit, true) }}'
